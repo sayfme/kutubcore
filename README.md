@@ -3,7 +3,7 @@
 Digital Book Collection Management System (DBCMS).
 Offline-first · Personal + Community · Go · SQLite → PostgreSQL.
 
-**Status:** Milestone F + LAN working (hardened + LAN-ready).
+**Status:** Milestone G working (analytics + goals + Bookshelf Life; F+LAN also done).
 Full design: `KutubCore_Complete_Project_Blueprint.md` (§1-§20).
 
 ## What works now
@@ -73,9 +73,15 @@ Full design: `KutubCore_Complete_Project_Blueprint.md` (§1-§20).
 - **E2E + CI (F):** `tests/e2e_test.go` (real HTTP sockets, full happy path);
   `scripts/ci.sh` (gofmt/vet/test/build) run by `.github/workflows/ci.yml`
   and `.gitea/workflows/ci.yaml`.
+- **Analytics + goals + Bookshelf Life (G):** `GET /me/analytics?months=N`
+  (pages/sessions/completions per month), monthly reading goals
+  (`GET|PUT /me/goals`, done-count from completions), and Bookshelf Life
+  (`GET /me/shelf` + thresholds in `PUT /me/shelf/settings`) — cosmetic
+  dust/cobweb/bookworm stages by inactivity, achievement for completed books,
+  never mutating reading data (Blueprint §12).
 
-Not yet (Cloud/Enhancements, on purpose): Postgres adapter + sync, gamification,
-analytics/recommendations. The local MVP + LAN are complete.
+Not yet (Cloud, on purpose): Postgres adapter + sync, recommendations,
+import/export. The local MVP + LAN are complete.
 
 ## Run locally
 
@@ -167,6 +173,5 @@ data/                   gitignored: db, files/, backups/, logs/
 
 ## Next step
 
-Cloud + Enhancements are deliberately deferred. The offline MVP + LAN are
-complete. Say `go cloud` for Milestone H (Postgres + sync), or `go polish`
-for gamification/analytics/import-export.
+Cloud/sync is deliberately deferred. Remaining extras: recommendations,
+import/export. Say `go cloud` for Milestone H or `go polish` for extras.

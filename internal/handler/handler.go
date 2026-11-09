@@ -29,6 +29,9 @@ type Handler struct {
 
 	Account *service.AccountService
 
+	Analytics    repository.AnalyticsRepository
+	AnalyticsSvc *service.AnalyticsService
+
 	Dirs   repository.DirectoryRepository
 	DirSvc *service.DirectoryService
 
@@ -129,6 +132,12 @@ func (h *Handler) Routes() http.Handler {
 		return middleware.RequireAuth(http.HandlerFunc(hf))
 	}
 	mux.Handle("GET /api/v1/me/dashboard", authenticated(h.Dashboard))
+	mux.Handle("GET /api/v1/me/analytics", authenticated(h.GetAnalytics))
+	mux.Handle("GET /api/v1/me/goals", authenticated(h.GetGoal))
+	mux.Handle("GET /api/v1/me/goals/all", authenticated(h.ListGoals))
+	mux.Handle("PUT /api/v1/me/goals", authenticated(h.SetGoal))
+	mux.Handle("GET /api/v1/me/shelf", authenticated(h.Shelf))
+	mux.Handle("PUT /api/v1/me/shelf/settings", authenticated(h.UpdateShelfSettings))
 	mux.Handle("GET /api/v1/me/acquisitions", authenticated(h.ListAcquisitions))
 	mux.Handle("POST /api/v1/me/acquisitions", authenticated(h.CreateAcquisition))
 	mux.Handle("GET /api/v1/me/acquisitions/{id}", authenticated(h.GetAcquisition))
@@ -315,6 +324,29 @@ const shellHTML = `<!doctype html>
     </form>
     <p class="err" id="source-err"></p>
     <ul id="sources"></ul>
+  </section>
+
+  <section id="analytics-section">
+    <h2>Analytics &amp; Goals</h2>
+    <form id="goal-form">
+      <label>Books this month (target)
+        <input name="books_target" type="number" min="1" max="100" required placeholder="2"></label>
+      <button type="submit">Set goal</button>
+    </form>
+    <p class="err" id="goal-err"></p>
+    <p id="goal-status"></p>
+    <h3>Pages by month</h3>
+    <div id="analytics"></div>
+    <h3>Bookshelf Life</h3>
+    <form id="shelf-settings-form">
+      <label><input type="checkbox" name="enabled" checked> Enable shelf life</label>
+      <label>Dust after (days) <input name="dust_days" type="number" min="1" value="30"></label>
+      <label>Cobwebs after (days) <input name="cobweb_days" type="number" min="2" value="60"></label>
+      <label>Bookworms after (days) <input name="worm_days" type="number" min="3" value="90"></label>
+      <button type="submit">Save thresholds</button>
+    </form>
+    <p class="err" id="shelf-err"></p>
+    <ul id="shelf"></ul>
   </section>
 
   <section id="files-section">

@@ -51,12 +51,15 @@ func NewApp(db *sql.DB) *app.App {
 		panic(err)
 	}
 	tokenRepo := sqlite.NewTokenRepo(db)
+	analyticsRepo := sqlite.NewAnalyticsRepo(db)
 	d := app.Deps{
 		Auth:           &service.AuthService{Users: userRepo, Sessions: sessionRepo, TTL: 24 * time.Hour},
 		Catalog:        &service.CatalogService{Books: catalogRepo, Writers: catalogRepo, Audit: catalogRepo},
 		Account:        &service.AccountService{Users: userRepo, Tokens: tokenRepo, Sessions: sessionRepo},
 		Personal:       personalRepo,
 		PersonalSvc:    &service.PersonalService{Personal: personalRepo, Books: catalogRepo, Acquisitions: acquisitionRepo, Files: catalogRepo},
+		Analytics:      analyticsRepo,
+		AnalyticsSvc:   &service.AnalyticsService{Repo: analyticsRepo},
 		Dirs:           catalogRepo,
 		DirSvc:         &service.DirectoryService{Dirs: catalogRepo, Audit: catalogRepo},
 		Acquisitions:   acquisitionRepo,

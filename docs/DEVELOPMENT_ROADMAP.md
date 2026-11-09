@@ -10,7 +10,8 @@
 | F — Hardening | Password reset, email verification, HTTPS/secure cookies, HSTS, E2E suite, CI | ✅ |
 | G — LAN | LAN deployment guide, mDNS note, LAN IP logging + HTTP warning | ✅ (this milestone) |
 | H — Cloud | Postgres adapter, Neon, sync queue + conflict UI | later |
-| I — Enhancements | Analytics/goals, Bookshelf Life, recommendations, import/export | later |
+| I — Analytics+Fun | Analytics (pages/month), reading goals, Bookshelf Life stages | ✅ (Milestone G) |
+| J — Extras | Recommendations, import/export (CSV/JSON) | later |
 
 MVP acceptance (Blueprint §18): all 13 criteria are met in A–E except
 "authors/tests for backup/restore" (E delivers CLI backup/restore + tests)

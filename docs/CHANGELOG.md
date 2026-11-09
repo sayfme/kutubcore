@@ -1,6 +1,16 @@
 # CHANGELOG — KutubCore
 
-## Unreleased — Milestone E (Offline + polish)
+## Unreleased — Milestone G (Analytics + Bookshelf Life)
+- `GET /me/analytics?months=N` (pages/sessions/completions per month, summary).
+- Reading goals: `GET/PUT /me/goals`, done-count derived from completions.
+- Bookshelf Life (Blueprint §12, cosmetic only): `GET /me/shelf` +
+  `PUT /me/shelf/settings` (per-user thresholds, disable, completed achievement).
+- Shell section with monthly bars, goal progress, and shelf stage list.
+
+## Milestone F + LAN
+- Password reset + email verification, HTTPS/secure cookies, HSTS, E2E suite + CI (GitHub+Gitea), LAN guide (`docs/LAN_DEPLOYMENT.md`, `scripts/lan.sh`).
+
+## Milestone E (Offline + polish)
 - FTS5 full-text search on books (`books_fts` + triggers, prefix-AND queries,
   LIKE fallback) replacing plain `%LIKE%` on the catalog endpoint.
 - PWA service worker (`GET /sw.js`, root scope): shell/static cache-first,

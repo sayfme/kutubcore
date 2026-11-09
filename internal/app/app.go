@@ -31,6 +31,9 @@ type Deps struct {
 	Personal    repository.PersonalRepository
 	PersonalSvc *service.PersonalService
 
+	Analytics    repository.AnalyticsRepository
+	AnalyticsSvc *service.AnalyticsService
+
 	Dirs   repository.DirectoryRepository
 	DirSvc *service.DirectoryService
 
@@ -61,6 +64,7 @@ func New(db *sql.DB, logger *slog.Logger, sessionTTL time.Duration, cookieSecure
 	personalRepo := sqlite.NewPersonalRepo(db)
 	acquisitionRepo := sqlite.NewAcquisitionRepo(db)
 	tokenRepo := sqlite.NewTokenRepo(db)
+	analyticsRepo := sqlite.NewAnalyticsRepo(db)
 
 	d := Deps{
 		Auth: &service.AuthService{
@@ -83,7 +87,9 @@ func New(db *sql.DB, logger *slog.Logger, sessionTTL time.Duration, cookieSecure
 			Acquisitions: acquisitionRepo,
 			Files:        catalogRepo,
 		},
-		Dirs: catalogRepo,
+		Analytics:    analyticsRepo,
+		AnalyticsSvc: &service.AnalyticsService{Repo: analyticsRepo},
+		Dirs:         catalogRepo,
 		DirSvc: &service.DirectoryService{
 			Dirs:  catalogRepo,
 			Audit: catalogRepo,
@@ -123,6 +129,8 @@ func NewWithDeps(db *sql.DB, logger *slog.Logger, d Deps) *App {
 		Account:        d.Account,
 		Personal:       d.Personal,
 		PersonalSvc:    d.PersonalSvc,
+		Analytics:      d.Analytics,
+		AnalyticsSvc:   d.AnalyticsSvc,
 		Dirs:           d.Dirs,
 		DirSvc:         d.DirSvc,
 		Acquisitions:   d.Acquisitions,

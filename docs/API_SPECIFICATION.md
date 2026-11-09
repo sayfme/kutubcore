@@ -45,7 +45,9 @@ Duplicate books without `?force=true` → `409 DUPLICATE_POSSIBLE`.
 
 ## Personal (`/api/v1/me/*`, always owner-checked)
 
-`GET /dashboard`, `GET|POST /books`, `GET|PATCH|DELETE /books/{id}`,
+`GET /dashboard`, `GET /analytics?months=N` (pages/sessions/done per month),
+`GET|PUT /goals` (+ `GET /goals/all`), `GET /shelf` + `PUT /shelf/settings` (Bookshelf Life),
+`GET|POST /books`, `GET|PATCH|DELETE /books/{id}`,
 `GET|PUT /books/{id}/progress`, `GET|POST /books/{id}/sessions`,
 `GET|POST /books/{id}/notes + PATCH|DELETE …/notes/{noteId}`,
 `GET|PUT|DELETE /books/{id}/review`,

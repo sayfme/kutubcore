@@ -159,6 +159,65 @@ $("#add-book-form")?.addEventListener("submit", async (e) => {
   if (res.ok) { e.target.reset(); refreshLibrary(); }
 });
 
+// ── Analytics & Goals & Bookshelf (Milestone G) ──────────────────────────
+// Cosmetic only: stages never change book or reading data (Blueprint §12).
+async function refreshAnalytics() {
+  const a = await api("GET", "/api/v1/me/analytics?months=6");
+  const el = document.querySelector("#analytics");
+  const months = a.json?.data?.months ?? [];
+  if (months.length) {
+    const max = Math.max(...months.map((m) => m.pages_read), 1);
+    el.innerHTML = months.map((m) => {
+      const pct = Math.round((m.pages_read / max) * 100);
+      return `<p><strong>${m.month}</strong> — ${m.pages_read} pages, ${m.sessions} sessions, ${m.books_done} done
+        <span class="bar"><span style="width:${pct}%"></span></span></p>`;
+    }).join("");
+  } else {
+    el.innerHTML = "<p>No reading data yet.</p>";
+  }
+
+  const g = await api("GET", "/api/v1/me/goals");
+  const gd = g.json?.data;
+  if (gd?.period_month) {
+    document.querySelector("#goal-status").textContent =
+      `${gd.period_month}: ${gd.books_done ?? 0} / ${gd.books_target} books done`;
+  }
+
+  const shelf = await api("GET", "/api/v1/me/shelf");
+  const entries = shelf.json?.data?.entries ?? [];
+  const ul = document.querySelector("#shelf");
+  ul.innerHTML = entries.map((e) => {
+    const icon = e.stage === "completed" ? "⭐"
+      : e.stage === "heavy" ? "🪱"
+      : e.stage === "bookworm" ? "🐛"
+      : e.stage === "cobweb" ? "🕸️"
+      : e.stage === "dust" ? "🧹"
+      : "📚";
+    return `<li>${icon} ${e.book_title} — ${e.label}${e.days_inactive ? ` (${e.days_inactive}d)` : ""}</li>`;
+  }).join("") || "<li>Empty shelf.</li>";
+}
+
+document.querySelector("#goal-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const { res, json } = await api("PUT", "/api/v1/me/goals", { books_target: parseInt(fd.get("books_target"), 10) });
+  document.querySelector("#goal-err").textContent = res.ok ? "" : (json?.error?.message || "Failed");
+  if (res.ok) refreshAnalytics();
+});
+
+document.querySelector("#shelf-settings-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const { res, json } = await api("PUT", "/api/v1/me/shelf/settings", {
+    enabled: fd.get("enabled") === "on",
+    dust_days: parseInt(fd.get("dust_days"), 10),
+    cobweb_days: parseInt(fd.get("cobweb_days"), 10),
+    worm_days: parseInt(fd.get("worm_days"), 10),
+  });
+  document.querySelector("#shelf-err").textContent = res.ok ? "" : (json?.error?.message || "Failed");
+  if (res.ok) refreshAnalytics();
+});
+
 async function refreshDirectories() {
   const shops = await api("GET", "/api/v1/bookshops");
   const sources = await api("GET", "/api/v1/sources");
@@ -212,5 +271,5 @@ $("#upload-form")?.addEventListener("submit", async (e) => {
   if (res.ok) e.target.reset();
 });
 
-refreshWho().then(() => { refreshLibrary(); refreshDirectories(); });
+refreshWho().then(() => { refreshLibrary(); refreshDirectories(); refreshAnalytics(); });
 listBooks();

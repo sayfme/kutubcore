@@ -150,8 +150,17 @@ func (s *AccountService) findByIdentifier(ctx context.Context, identifier string
 }
 
 func parseTime(s string) (time.Time, error) {
-	if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
-		return t, nil
+	// Go RFC3339Nano/RFC3339 + SQLite datetime('now') bare "YYYY-MM-DD HH:MM:SS".
+	for _, layout := range []string{time.RFC3339Nano, time.RFC3339, "2006-01-02 15:04:05.999999999", "2006-01-02 15:04:05"} {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
 	}
-	return time.Parse(time.RFC3339, s)
+	return time.Time{}, errUnparsableTime(s)
 }
+
+type timeParseError string
+
+func (e timeParseError) Error() string { return "unparsable time: " + string(e) }
+
+func errUnparsableTime(s string) error { return timeParseError(s) }
