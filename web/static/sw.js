@@ -5,10 +5,12 @@
  *  - NEVER cache: /api/v1/me/*, /api/v1/auth/*, /api/v1/users/* personal data,
  *    and all non-GET requests (Blueprint §10: keep sensitive data out of caches).
  */
-const CACHE = "kutubcore-v2"; // bump on every shell/CSS/JS/icon change
+const CACHE = "kutubcore-v8-catalogfirst"; // bump on every shell/CSS/JS/icon change
 const SHELL = [
   "/",
+  "/static/css/bootstrap.min.css",
   "/static/css/app.css",
+  "/static/js/bootstrap.bundle.min.js",
   "/static/js/app.js",
   "/static/manifest.webmanifest",
   "/static/icons/logo.svg",

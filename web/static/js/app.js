@@ -13,7 +13,8 @@ if ("serviceWorker" in navigator) {
 const onlineEl = () => document.querySelector("#online-status");
 function setOnline() {
   const el = onlineEl();
-  if (el) el.textContent = navigator.onLine ? "Online" : "Offline — showing cached catalog";
+  if (el) el.textContent = navigator.onLine ? "Online" : "Offline — cached catalog";
+  document.body.classList.toggle("offline", !navigator.onLine);
 }
 window.addEventListener("online", setOnline);
 window.addEventListener("offline", setOnline);
@@ -45,30 +46,46 @@ function initials(title) {
   return (title || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 }
 
+function setVisible(id, show) {
+  const el = document.querySelector(id);
+  if (el) el.style.display = show ? "" : "none";
+}
+
 async function refreshWho() {
   const { res, json } = await api("GET", "/api/v1/auth/me");
+  const navDir = document.querySelector("#nav-directories");
   if (res.ok && json?.data) {
     const u = json.data;
     const isOrg = !!u.roles?.includes("organizer");
     const org = isOrg ? " • Organizer" : "";
     who.textContent = `Signed in as ${u.display_name || u.email || u.id}${org}`;
     $("#avatar").textContent = initials(u.display_name || u.email || "?");
+    // Dashboard view: replace the sign-in forms with the account view.
+    $("#auth-form").style.display = "none";
+    $("#account-view").style.display = "";
+    $("#signin-h").innerHTML = '<img class="ic" src="/static/icons/signin.svg" alt="">Your account';
+    $("#signin-note").style.display = "none";
     $("#logout-btn").hidden = false;
     $("#organizer-btn").hidden = isOrg;
+    // Signed-in readers get their private sections (library, reading).
+    setVisible("#library", true);
+    setVisible("#acquisitions", true);
+    setVisible("#analytics", true);
     // Blueprint §11: organizer workspace shows only for organizers.
-    for (const id of ["#directories", "#files", "#create-section"]) {
-      const el = document.querySelector(id);
-      if (el) el.style.display = isOrg ? "" : "none";
-    }
+    for (const id of ["#directories", "#files", "#create-section"]) setVisible(id, isOrg);
+    if (navDir) navDir.style.display = isOrg ? "" : "none";
   } else {
-    who.textContent = "Browsing as guest.";
+    who.textContent = "Browsing as guest. Sign in to manage your library.";
     $("#avatar").textContent = "?";
+    $("#auth-form").style.display = "";
+    $("#account-view").style.display = "none";
+    $("#signin-h").innerHTML = '<img class="ic" src="/static/icons/signin.svg" alt="">Sign in';
+    $("#signin-note").style.display = "";
     $("#logout-btn").hidden = true;
     $("#organizer-btn").hidden = true;
-    for (const id of ["#directories", "#files", "#create-section"]) {
-      const el = document.querySelector(id);
-      if (el) el.style.display = "none";
-    }
+    // Personal sections need a login — hide them from guests entirely.
+    for (const id of ["#library", "#acquisitions", "#analytics", "#directories", "#files", "#create-section"]) setVisible(id, false);
+    if (navDir) navDir.style.display = "none";
   }
 }
 
@@ -79,6 +96,12 @@ async function listBooks(q = "") {
   ul.innerHTML = "";
   for (const b of json?.data ?? []) {
     const li = document.createElement("li");
+    li.className = "col-12 col-md-6 col-lg-4";
+    li.style.listStyle = "none";
+    const inner = document.createElement("div");
+    inner.className = "card h-100 shadow-sm";
+    const body = document.createElement("div");
+    body.className = "card-body d-flex gap-3";
     const cover = document.createElement("div");
     cover.className = "cover";
     cover.style.background = spineFor(b.title);
@@ -117,10 +140,12 @@ async function listBooks(q = "") {
       document.querySelector("#library")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     box.append(addBtn);
-    li.append(cover, box);
+    body.append(cover, box);
+    inner.append(body);
+    li.append(inner);
     ul.appendChild(li);
   }
-  if (!(json?.data ?? []).length) ul.innerHTML = '<li>No books yet. Organizers can add the first ones.</li>';
+  if (!(json?.data ?? []).length) ul.innerHTML = '<li class="col-12">No books yet. Organizers can add the first ones.</li>';
 }
 
 $("#search-form").addEventListener("submit", (e) => {
@@ -150,6 +175,7 @@ $("#register-btn").addEventListener("click", async () => {
     identifier,
     password: fd.get("password"),
   };
+  delete payload.identifier; // strict server decoding rejects unknown fields
   const { res, json } = await api("POST", "/api/v1/auth/register", payload);
   $("#auth-err").textContent = res.ok ? "" : (json?.error?.message || "Register failed");
   await refreshWho();
@@ -204,12 +230,12 @@ async function refreshLibrary() {
     badges.className = "badges";
     for (const s of [b.physical_status, b.digital_status, b.reading_status]) {
       const bd = document.createElement("span");
-      bd.className = "badge";
+      bd.className = "badge badge-soft";
       bd.textContent = s.replaceAll("_", " ");
       badges.append(bd);
     }
     const fav = document.createElement("span");
-    fav.className = "badge fav";
+    fav.className = "badge badge-fav";
     fav.textContent = "★ favorite";
     badges.append(fav);
     li.append(head, badges);

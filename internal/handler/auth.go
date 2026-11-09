@@ -2,21 +2,39 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"kutubcore/internal/middleware"
 )
 
 // POST /api/v1/auth/register — public.
+// Accepts email/mobile directly, OR a single identifier (email or mobile)
+// that is split into the right field (the shell sends identifier for both
+// login and register).
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		DisplayName string `json:"display_name"`
 		Email       string `json:"email"`
 		Mobile      string `json:"mobile"`
+		Identifier  string `json:"identifier"`
 		Password    string `json:"password"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
 		writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid JSON body.")
 		return
+	}
+	// Split identifier into email/mobile when dedicated fields are empty.
+	if body.Identifier != "" {
+		if body.Email == "" && body.Mobile == "" {
+			if strings.Contains(body.Identifier, "@") {
+				body.Email = body.Identifier
+			} else {
+				body.Mobile = body.Identifier
+			}
+		}
+		if body.DisplayName == "" {
+			body.DisplayName = body.Identifier
+		}
 	}
 	u, err := h.Auth.Register(r.Context(), body.DisplayName, body.Email, body.Mobile, body.Password)
 	if err != nil {
