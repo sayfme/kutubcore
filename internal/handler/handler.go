@@ -223,159 +223,202 @@ const shellHTML = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1f2a44">
-<title>KutubCore</title>
+<title>KutubCore — Your Library, Beautifully Shelved</title>
+<meta name="description" content="KutubCore — an offline-first library for your books.">
 <link rel="manifest" href="/static/manifest.webmanifest">
 <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
-<main class="shell">
-  <header>
-    <h1>KutubCore</h1>
-    <p id="who">Loading…</p>
-    <p id="online-status" role="status">Online</p>
-  </header>
+<div class="hero">
+  <div class="hero-head">
+    <div class="logo-wrap"><img src="/static/icons/logo.svg" alt="" aria-hidden="true"></div>
+    <div class="brand">
+      <h1>KutubCore</h1>
+      <p class="tagline">Your library, beautifully shelved — offline-first.</p>
+    </div>
+    <div class="hero-meta">
+      <span class="pill" id="pill-online"><span class="dot" aria-hidden="true"></span> <span id="online-status" role="status">Online</span></span>
+      <span class="pill" id="pill-offline"><span class="dot" aria-hidden="true"></span> Offline — cached catalog</span>
+    </div>
+  </div>
+  <div class="spine-strip" aria-hidden="true"></div>
+</div>
 
-  <section>
-    <h2>Sign in</h2>
+<nav class="nav" aria-label="Sections">
+  <div class="nav-inner">
+    <a href="#catalog"><img class="ic" src="/static/icons/book.svg" alt="">Catalog</a>
+    <a href="#library"><img class="ic" src="/static/icons/library.svg" alt="">My Collection</a>
+    <a href="#analytics"><img class="ic" src="/static/icons/target.svg" alt="">Reading</a>
+    <a href="#directories" id="nav-directories"><img class="ic" src="/static/icons/store.svg" alt="">Bookshops</a>
+    <a href="#signin"><img class="ic" src="/static/icons/signin.svg" alt="">Sign in</a>
+    <span class="who"><span class="avatar" id="avatar" aria-hidden="true">?</span> <span id="who">Loading…</span></span>
+  </div>
+</nav>
+
+<main class="shell">
+  <section class="card" id="signin" aria-labelledby="signin-h">
+    <h2 id="signin-h"><img class="ic" src="/static/icons/signin.svg" alt="">Sign in</h2>
     <form id="auth-form">
-      <label>Display name <input name="display_name" autocomplete="name"></label>
-      <label>Email or identifier <input name="identifier" autocomplete="username"></label>
+      <label>Display name <input name="display_name" autocomplete="name" placeholder="Your name (for registering)"></label>
+      <label>Email or identifier <input name="identifier" autocomplete="username" placeholder="you@example.com or mobile"></label>
       <input type="hidden" name="email">
       <input type="hidden" name="mobile">
-      <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
-      <button type="submit" data-mode="login">Sign in</button>
-      <button type="button" id="register-btn">Register</button>
+      <label>Password <input type="password" name="password" required autocomplete="current-password" placeholder="Minimum 8 characters"></label>
+      <button type="submit"><img class="ic" src="/static/icons/signin.svg" alt="">Sign in</button>
+      <button type="button" id="register-btn" class="btn-ghost"><img class="ic" src="/static/icons/plus.svg" alt="">Register</button>
     </form>
-    <p><button type="button" id="organizer-btn" hidden>Become Organizer</button>
+    <p><button type="button" id="organizer-btn" hidden><img class="ic" src="/static/icons/star.svg" alt="">Become an Organizer</button>
        <button type="button" id="logout-btn" hidden>Sign out</button></p>
-    <p class="err" id="auth-err"></p>
+    <p class="err" id="auth-err" role="alert"></p>
+    <p style="color:var(--muted);font-size:.9rem;margin:.2rem 0 0">Browsing as a guest is fine — sign in to keep your own shelves, notes, and goals.</p>
   </section>
 
-  <section>
-    <h2>Search books</h2>
-    <form id="search-form">
-      <input name="q" placeholder="Title, original title, writer…">
-      <button type="submit">Search</button>
+  <section class="card" id="catalog" aria-labelledby="catalog-h">
+    <h2 id="catalog-h"><img class="ic" src="/static/icons/search.svg" alt="">Catalog</h2>
+    <form id="search-form" role="search">
+      <label>Search <input name="q" placeholder="Title, original title, writer…" autocomplete="off"></label>
+      <button type="submit"><img class="ic" src="/static/icons/search.svg" alt="">Search</button>
     </form>
-    <ul id="books"></ul>
+    <ul class="books" id="books"></ul>
   </section>
 
-  <section id="library-section">
-    <h2>My Collection (Reader)</h2>
+  <section class="card" id="library" aria-labelledby="library-h">
+    <h2 id="library-h"><img class="ic" src="/static/icons/library.svg" alt="">My Collection</h2>
     <form id="add-book-form">
-      <label>Book ID <input name="book_id" required placeholder="catalog book id"></label>
-      <label>Physical
-        <select name="physical_status">
-          <option value="not_collected">not_collected</option>
-          <option value="want_to_buy">want_to_buy</option>
-          <option value="owned">owned</option>
-        </select></label>
-      <label>Reading
-        <select name="reading_status">
-          <option value="want_to_read">want_to_read</option>
-          <option value="currently_reading">currently_reading</option>
-          <option value="on_hold">on_hold</option>
-          <option value="completed">completed</option>
-          <option value="abandoned">abandoned</option>
-        </select></label>
+      <label>Catalog book ID <input name="book_id" required placeholder="Paste a book ID from the catalog"></label>
+      <div class="grid-2">
+        <label>Physical
+          <select name="physical_status">
+            <option value="not_collected">Not collected</option>
+            <option value="want_to_buy">Want to buy</option>
+            <option value="owned">Owned</option>
+          </select></label>
+        <label>Reading
+          <select name="reading_status">
+            <option value="want_to_read">Want to read</option>
+            <option value="currently_reading">Currently reading</option>
+            <option value="on_hold">On hold</option>
+            <option value="completed">Completed</option>
+            <option value="abandoned">Abandoned</option>
+          </select></label>
+      </div>
       <label><input type="checkbox" name="is_favorite"> Favorite</label>
-      <button type="submit">Add to my library</button>
+      <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Add to my library</button>
     </form>
-    <p class="err" id="add-book-err"></p>
+    <p class="err" id="add-book-err" role="alert"></p>
     <p id="dash"></p>
-    <ul id="my-books"></ul>
-    <h3>Record acquisition (creates copies)</h3>
+    <ul class="rows" id="my-books"></ul>
+    <h3><img class="ic" src="/static/icons/store.svg" alt="">Record acquisition (creates copies)</h3>
     <form id="acq-form">
-      <label>Book ID <input name="book_id" required></label>
-      <label>Bookshop ID <input name="bookshop_id" placeholder="optional"></label>
-      <label>Date <input name="acquisition_date" type="date"></label>
-      <label>Total cost <input name="total_cost" type="number" min="0" step="0.01" placeholder="optional"></label>
+      <div class="grid-2">
+        <label>Book ID <input name="book_id" required></label>
+        <label>Bookshop ID <input name="bookshop_id" placeholder="Optional"></label>
+        <label>Date <input name="acquisition_date" type="date"></label>
+        <label>Total cost <input name="total_cost" type="number" min="0" step="0.01" placeholder="Optional"></label>
+      </div>
       <label>Currency <input name="currency_code" maxlength="3" placeholder="USD"></label>
-      <button type="submit">Record acquisition</button>
+      <button type="submit"><img class="ic" src="/static/icons/check.svg" alt="">Record acquisition</button>
     </form>
-    <p class="err" id="acq-err"></p>
+    <p class="err" id="acq-err" role="alert"></p>
   </section>
 
-  <section id="directories-section">
-    <h2>Bookshops &amp; Sources (Organizer)</h2>
-    <form id="shop-form">
-      <label>Name <input name="name" required></label>
-      <label>Type <select name="shop_type">
-        <option value="both">both</option>
-        <option value="physical">physical</option>
-        <option value="online">online</option>
-      </select></label>
-      <button type="submit">Add bookshop</button>
-    </form>
-    <p class="err" id="shop-err"></p>
-    <ul id="shops"></ul>
-    <form id="source-form">
-      <label>Name <input name="name" required></label>
-      <label>Type <select name="source_type">
-        <option value="other">other</option>
-        <option value="bookshop">bookshop</option>
-        <option value="library">library</option>
-        <option value="gift">gift</option>
-        <option value="friend">friend</option>
-        <option value="publisher">publisher</option>
-        <option value="online_repository">online_repository</option>
-      </select></label>
-      <button type="submit">Add source</button>
-    </form>
-    <p class="err" id="source-err"></p>
-    <ul id="sources"></ul>
+  <section class="card" id="directories" aria-labelledby="directories-h">
+    <h2 id="directories-h"><img class="ic" src="/static/icons/store.svg" alt="">Bookshops &amp; Sources</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin:0 0 .5rem">Organizer only — sign in and become an organizer to add shops and sources.</p>
+    <div class="grid-2">
+      <div>
+        <form id="shop-form">
+          <label>Name <input name="name" required placeholder="Dhaka Book House"></label>
+          <label>Type <select name="shop_type">
+            <option value="both">Both</option>
+            <option value="physical">Physical</option>
+            <option value="online">Online</option>
+          </select></label>
+          <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Add bookshop</button>
+        </form>
+        <p class="err" id="shop-err" role="alert"></p>
+        <ul class="rows" id="shops"></ul>
+      </div>
+      <div>
+        <form id="source-form">
+          <label>Name <input name="name" required placeholder="University Library"></label>
+          <label>Type <select name="source_type">
+            <option value="other">Other</option>
+            <option value="bookshop">Bookshop</option>
+            <option value="library">Library</option>
+            <option value="gift">Gift</option>
+            <option value="friend">Friend</option>
+            <option value="publisher">Publisher</option>
+            <option value="online_repository">Online repository</option>
+          </select></label>
+          <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Add source</button>
+        </form>
+        <p class="err" id="source-err" role="alert"></p>
+        <ul class="rows" id="sources"></ul>
+      </div>
+    </div>
   </section>
 
-  <section id="analytics-section">
-    <h2>Analytics &amp; Goals</h2>
+  <section class="card" id="analytics" aria-labelledby="analytics-h">
+    <h2 id="analytics-h"><img class="ic" src="/static/icons/target.svg" alt="">Analytics &amp; Goals</h2>
     <form id="goal-form">
       <label>Books this month (target)
         <input name="books_target" type="number" min="1" max="100" required placeholder="2"></label>
-      <button type="submit">Set goal</button>
+      <button type="submit"><img class="ic" src="/static/icons/check.svg" alt="">Set goal</button>
     </form>
-    <p class="err" id="goal-err"></p>
+    <p class="err" id="goal-err" role="alert"></p>
     <p id="goal-status"></p>
-    <h3>Pages by month</h3>
+    <h3><img class="ic" src="/static/icons/book.svg" alt="">Pages by month</h3>
     <div id="analytics"></div>
-    <h3>Bookshelf Life</h3>
+    <h3><img class="ic" src="/static/icons/library.svg" alt="">Bookshelf Life</h3>
     <form id="shelf-settings-form">
       <label><input type="checkbox" name="enabled" checked> Enable shelf life</label>
-      <label>Dust after (days) <input name="dust_days" type="number" min="1" value="30"></label>
-      <label>Cobwebs after (days) <input name="cobweb_days" type="number" min="2" value="60"></label>
-      <label>Bookworms after (days) <input name="worm_days" type="number" min="3" value="90"></label>
-      <button type="submit">Save thresholds</button>
+      <div class="grid-2">
+        <label>Dust after (days) <input name="dust_days" type="number" min="1" value="30"></label>
+        <label>Cobwebs after (days) <input name="cobweb_days" type="number" min="2" value="60"></label>
+        <label>Bookworms after (days) <input name="worm_days" type="number" min="3" value="90"></label>
+      </div>
+      <button type="submit"><img class="ic" src="/static/icons/check.svg" alt="">Save thresholds</button>
     </form>
-    <p class="err" id="shelf-err"></p>
-    <ul id="shelf"></ul>
+    <p class="err" id="shelf-err" role="alert"></p>
+    <ul class="rows" id="shelf"></ul>
   </section>
 
-  <section id="files-section">
-    <h2>Digital Files (Organizer)</h2>
+  <section class="card" id="files" aria-labelledby="files-h">
+    <h2 id="files-h"><img class="ic" src="/static/icons/file.svg" alt="">Digital Files</h2>
     <form id="upload-form">
-      <label>Book ID <input name="book_id" required></label>
+      <label>Book ID <input name="book_id" required placeholder="Catalog book ID"></label>
       <label>PDF/EPUB file <input name="file" type="file" accept=".pdf,.epub" required></label>
-      <button type="submit">Upload file</button>
+      <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Upload file</button>
     </form>
-    <p class="err" id="upload-err"></p>
+    <p class="err" id="upload-err" role="alert"></p>
   </section>
 
-  <section id="create-section">
-    <h2>Catalog (Organizer)</h2>
-    <form id="writer-form">
-      <h3>New writer</h3>
-      <label>Full name <input name="full_name" required></label>
-      <button type="submit">Add writer</button>
-    </form>
-    <p class="err" id="writer-err"></p>
-    <form id="book-form">
-      <h3>New book</h3>
-      <label>Title <input name="title" required></label>
-      <label>Writer ID <input name="writer_id" placeholder="optional"></label>
-      <button type="submit">Add book</button>
-    </form>
-    <p class="err" id="book-err"></p>
+  <section class="card" id="create-section" aria-labelledby="catalog-edit-h">
+    <h2 id="catalog-edit-h"><img class="ic" src="/static/icons/pen.svg" alt="">Catalog (Organizer)</h2>
+    <div class="grid-2">
+      <div>
+        <form id="writer-form">
+          <h3>New writer</h3>
+          <label>Full name <input name="full_name" required placeholder="Author name"></label>
+          <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Add writer</button>
+        </form>
+        <p class="err" id="writer-err" role="alert"></p>
+      </div>
+      <div>
+        <form id="book-form">
+          <h3>New book</h3>
+          <label>Title <input name="title" required placeholder="Book title"></label>
+          <label>Writer ID <input name="writer_id" placeholder="Optional"></label>
+          <button type="submit"><img class="ic" src="/static/icons/plus.svg" alt="">Add book</button>
+        </form>
+        <p class="err" id="book-err" role="alert"></p>
+      </div>
+    </div>
     <details><summary>API health</summary><p><a href="/api/v1/health">GET /api/v1/health</a></p></details>
   </section>
+
+  <p class="foot">KutubCore — offline-first library · <a href="/api/v1/health">API health</a> · <a href="/sw.js">Service worker</a></p>
 </main>
 <script src="/static/js/app.js"></script>
 </body>

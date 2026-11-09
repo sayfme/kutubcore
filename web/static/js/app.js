@@ -34,19 +34,41 @@ async function api(method, path, body) {
   return { res, json };
 }
 
+// Deterministic spine colour from the title (stable per book).
+const SPINES = ["var(--spine-1)", "var(--spine-2)", "var(--spine-3)", "var(--spine-4)", "var(--spine-5)"];
+function spineFor(title) {
+  let h = 0;
+  for (const c of title) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return SPINES[h % SPINES.length];
+}
+function initials(title) {
+  return (title || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+}
+
 async function refreshWho() {
   const { res, json } = await api("GET", "/api/v1/auth/me");
   if (res.ok && json?.data) {
     const u = json.data;
-    const org = u.roles?.includes("organizer") ? " [Organizer]" : "";
+    const isOrg = !!u.roles?.includes("organizer");
+    const org = isOrg ? " • Organizer" : "";
     who.textContent = `Signed in as ${u.display_name || u.email || u.id}${org}`;
+    $("#avatar").textContent = initials(u.display_name || u.email || "?");
     $("#logout-btn").hidden = false;
-    $("#organizer-btn").hidden = !!u.roles?.includes("organizer");
-    $("#create-section").dataset.organizer = u.roles?.includes("organizer") ? "1" : "";
+    $("#organizer-btn").hidden = isOrg;
+    // Blueprint §11: organizer workspace shows only for organizers.
+    for (const id of ["#directories", "#files", "#create-section"]) {
+      const el = document.querySelector(id);
+      if (el) el.style.display = isOrg ? "" : "none";
+    }
   } else {
-    who.textContent = "Browsing as guest. Sign in to manage your library.";
+    who.textContent = "Browsing as guest.";
+    $("#avatar").textContent = "?";
     $("#logout-btn").hidden = true;
     $("#organizer-btn").hidden = true;
+    for (const id of ["#directories", "#files", "#create-section"]) {
+      const el = document.querySelector(id);
+      if (el) el.style.display = "none";
+    }
   }
 }
 
@@ -57,11 +79,48 @@ async function listBooks(q = "") {
   ul.innerHTML = "";
   for (const b of json?.data ?? []) {
     const li = document.createElement("li");
-    const writers = (b.writers ?? []).map((w) => w.name).join(", ");
-    li.textContent = b.title + (writers ? ` — ${writers}` : "");
+    const cover = document.createElement("div");
+    cover.className = "cover";
+    cover.style.background = spineFor(b.title);
+    cover.textContent = initials(b.title);
+    cover.setAttribute("aria-hidden", "true");
+    const box = document.createElement("div");
+    const title = document.createElement("h4");
+    title.textContent = b.title;
+    const by = document.createElement("p");
+    by.className = "by";
+    by.textContent = (b.writers ?? []).map((w) => w.name).join(", ") || "";
+    const blurb = document.createElement("p");
+    blurb.className = "blurb";
+    blurb.textContent = (b.description ?? "").slice(0, 140);
+    box.append(title, by);
+    if (blurb.textContent) box.append(blurb);
+    if ((b.genres ?? []).length) {
+      const chips = document.createElement("div");
+      chips.className = "chips";
+      for (const g of b.genres.slice(0, 3)) {
+        const c = document.createElement("span");
+        c.className = "chip";
+        c.textContent = g.name;
+        chips.append(c);
+      }
+      box.append(chips);
+    }
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "btn-ghost";
+    addBtn.textContent = "Add ID";
+    addBtn.title = "Copy this book's ID into the 'Add to my library' form";
+    addBtn.addEventListener("click", () => {
+      const input = document.querySelector("#add-book-form [name=book_id]");
+      if (input) { input.value = b.id; input.focus(); }
+      document.querySelector("#library")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    box.append(addBtn);
+    li.append(cover, box);
     ul.appendChild(li);
   }
-  if (!(json?.data ?? []).length) ul.innerHTML = "<li>No books yet.</li>";
+  if (!(json?.data ?? []).length) ul.innerHTML = '<li>No books yet. Organizers can add the first ones.</li>';
 }
 
 $("#search-form").addEventListener("submit", (e) => {
@@ -139,7 +198,35 @@ async function refreshLibrary() {
   ul.innerHTML = "";
   for (const b of lib.json?.data ?? []) {
     const li = document.createElement("li");
-    li.textContent = `${b.book_title} · ${b.physical_status}/${b.digital_status} · ${b.reading_status}${b.is_favorite ? " ★" : ""}`;
+    const head = document.createElement("strong");
+    head.textContent = b.book_title;
+    const badges = document.createElement("span");
+    badges.className = "badges";
+    for (const s of [b.physical_status, b.digital_status, b.reading_status]) {
+      const bd = document.createElement("span");
+      bd.className = "badge";
+      bd.textContent = s.replaceAll("_", " ");
+      badges.append(bd);
+    }
+    const fav = document.createElement("span");
+    fav.className = "badge fav";
+    fav.textContent = "★ favorite";
+    badges.append(fav);
+    li.append(head, badges);
+    if (b.progress && b.progress.total_pages) {
+      const p = document.createElement("div");
+      p.style.color = "var(--muted)";
+      p.style.fontSize = ".85rem";
+      p.textContent = `Page ${b.progress.current_page} of ${b.progress.total_pages} (${Math.round(b.progress.progress_percent)}%)`;
+      li.append(p);
+    }
+    if (b.review?.review_text) {
+      const q = document.createElement("div");
+      q.style.fontSize = ".85rem";
+      q.style.color = "var(--muted)";
+      q.textContent = `“${b.review.review_text}”`;
+      li.append(q);
+    }
     ul.appendChild(li);
   }
   if (!(lib.json?.data ?? []).length) ul.innerHTML = "<li>Your library is empty. Add a catalog book by ID.</li>";

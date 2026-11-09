@@ -5,12 +5,24 @@
  *  - NEVER cache: /api/v1/me/*, /api/v1/auth/*, /api/v1/users/* personal data,
  *    and all non-GET requests (Blueprint §10: keep sensitive data out of caches).
  */
-const CACHE = "kutubcore-v1";
+const CACHE = "kutubcore-v2"; // bump on every shell/CSS/JS/icon change
 const SHELL = [
   "/",
   "/static/css/app.css",
   "/static/js/app.js",
   "/static/manifest.webmanifest",
+  "/static/icons/logo.svg",
+  "/static/icons/search.svg",
+  "/static/icons/book.svg",
+  "/static/icons/library.svg",
+  "/static/icons/target.svg",
+  "/static/icons/store.svg",
+  "/static/icons/file.svg",
+  "/static/icons/pen.svg",
+  "/static/icons/star.svg",
+  "/static/icons/signin.svg",
+  "/static/icons/plus.svg",
+  "/static/icons/check.svg",
 ];
 
 self.addEventListener("install", (event) => {

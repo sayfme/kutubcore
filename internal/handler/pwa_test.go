@@ -25,7 +25,7 @@ func TestPWA_ServiceWorker(t *testing.T) {
 		t.Fatalf("Content-Type = %q", rec.Header().Get("Content-Type"))
 	}
 	body := rec.Body.String()
-	if !strings.Contains(body, "kutubcore-v1") {
+	if !strings.Contains(body, "kutubcore-v") {
 		t.Fatal("sw.js should declare a cache version")
 	}
 	if strings.Contains(body, "/me/") && !strings.Contains(body, "isSensitive") {

@@ -17,10 +17,16 @@ embedded into the binary so `go run` works without a static server).
 
 ## Design
 
-Traditional library tone, clean reading-focused layout, light/dark via
-`prefers-color-scheme` (CSS variables, focus-visible outlines, keyboard nav).
-Destructive actions need confirmation (not yet wired in the shell; API
-supports soft-delete).
+House style (revised Milestone G+): parchment/library-warm palette, book-spine
+divider under the hero, serif wordmark, book cards with deterministic spine
+colors per title, status pills for physical/digital/reading, emoji shelf
+stages. Light/dark via `prefers-color-scheme`, focus-visible outlines,
+keyboard nav, `prefers-reduced-motion`. Icons live in
+`web/static/icons/*.svg` (24×24 stroke, `currentColor`). Organizer actions
+(Bookshops/Sources, Files, Catalog) are hidden until organizer role (JS
+role-gating, matching the blueprint's Organizer Workspace rule). Destructive
+actions need confirmation (not yet wired in the shell; API supports
+soft-delete).
 
 ## Offline (§10)
 
