@@ -1,0 +1,25 @@
+/* KutubCore foundation shell — full design in Milestone 2+. */
+:root {
+  --bg: #f7f3ea;
+  --fg: #1f2a44;
+  --muted: #6b7280;
+  --line: #e5e0d5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+.shell {
+  max-width: 720px;
+  margin: 4rem auto;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.shell h1 { margin-top: 0; }
+.shell p { color: var(--muted); }

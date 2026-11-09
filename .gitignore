@@ -1,0 +1,26 @@
+# Binaries
+/kutubcore
+/bin/
+/dist/
+*.exe
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Data (never commit DB, uploads, backups, logs)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# Go
+/coverage.out
