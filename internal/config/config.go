@@ -4,6 +4,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -14,6 +15,20 @@ type Config struct {
 	DBPath       string
 	LogLevel     string
 	HTTPTimeouts timeouts
+	// SessionTTL is how long a login session lasts (default 30 days).
+	SessionTTL time.Duration
+	// CookieSecure sets Secure on the session cookie. Keep false for
+	// localhost http; set true behind HTTPS (Blueprint §14).
+	CookieSecure bool
+	// FileDir is the filesystem base for uploaded files (Blueprint §8).
+	FileDir string
+	// TLSCertFile/TLSKeyFile enable direct HTTPS. Behind a reverse proxy
+	// (nginx/caddy terminating TLS) leave these empty and set CookieSecure.
+	TLSCertFile string
+	TLSKeyFile  string
+	// PublicBaseURL is used to build reset/verify links in logs
+	// (e.g. http://localhost:8080). Defaults to http://localhost:8080.
+	PublicBaseURL string
 }
 
 type timeouts struct {
@@ -36,6 +51,12 @@ func Load() Config {
 			Write:      time.Duration(envIntOr("HTTP_WRITE_TIMEOUT_SEC", 15)) * time.Second,
 			Idle:       time.Duration(envIntOr("HTTP_IDLE_TIMEOUT_SEC", 60)) * time.Second,
 		},
+		SessionTTL:    time.Duration(envIntOr("SESSION_TTL_HOURS", 720)) * time.Hour,
+		CookieSecure:  strings.ToLower(envOr("COOKIE_SECURE", "")) == "true",
+		FileDir:       envOr("FILE_DIR", "data/files"),
+		TLSCertFile:   envOr("TLS_CERT_FILE", ""),
+		TLSKeyFile:    envOr("TLS_KEY_FILE", ""),
+		PublicBaseURL: strings.TrimSuffix(envOr("PUBLIC_BASE_URL", "http://localhost:8080"), "/"),
 	}
 }
 
